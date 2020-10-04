@@ -1,0 +1,9 @@
+*.zip
+*.jpg
+*.jpeg
+*.png
+*.gif
+.idea/
+HelloOpenGL/.idea
+HelloOpenGL/env
+__pycache__
