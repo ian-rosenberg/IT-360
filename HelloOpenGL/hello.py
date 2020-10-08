@@ -55,14 +55,82 @@ try:
     from OpenGL.GL import *
     from OpenGL.GLU import *
     import numpy as np
+    import random as rand
 except:
     print('''
 ERROR: PyOpenGL not installed properly.
         ''')
     sys.exit()
 
-SCREEN_SIZE = 250
-circles = []
+global current_circle
+
+
+class Circle:
+    cx = -1.0
+    cy = -1.0
+    r = -1.0
+
+    def __init__(self):
+        self.cx = rand.uniform(-1.0, 1.0)
+        self.cy = rand.uniform(-1.0, 1.0)
+        self.r = 1
+
+    def random_position(self):
+        self.cx = rand.uniform(-1.0, 1.0)
+        self.cy = rand.uniform(-1.0, 1.0)
+
+    def set_position(self, px, py):
+        self.cx = px
+        self.cy = py
+
+    # Draw a circle
+    def draw_circle(self):
+        glColor3f(0.807, 0.0, 0.0)
+        glBegin(GL_TRIANGLES)
+
+        glVertex3f(self.cx, self.cy, 0.0)
+        for theta in range(361):
+            glVertex3f(self.cx, self.cy, 0.0)
+
+            rads = np.pi * theta / 180
+
+            x = self.cx + self.r/10 * np.cos(rads)
+            y = self.cy + self.r/10 * np.sin(rads)
+
+            glVertex3f(x, y, 0.0)
+
+            if theta == 360:
+                rads = 0
+
+                x = self.cx + self.r/10 * np.cos(rads)
+                y = self.cy + self.r/10 * np.sin(rads)
+
+                glVertex3f(x, y, 0.0)
+            else:
+                rads = np.pi * theta / 180
+
+                x = self.cx + self.r/10 * np.cos(rads)
+                y = self.cy + self.r/10 * np.sin(rads)
+
+                glVertex3f(x, y, 0.0)
+        glEnd()
+
+        glColor3f(0.0, 0.0, 0.0)
+        glBegin(GL_LINE_STRIP)
+
+        for theta in range(361):
+            rads = np.pi * theta / 180
+
+            x = self.cx + self.r/10 * np.cos(rads)
+            y = self.cy + self.r/10 * np.sin(rads)
+
+            glVertex3f(x, y, 0.0)
+
+        glEnd()
+
+    def move_circle(self, new_x, new_y):
+        self.cx += new_x
+        self.cy += new_y
 
 
 def draw_quad(x, y, width, height):
@@ -84,90 +152,14 @@ def draw_quad(x, y, width, height):
     glEnd()
 
 
-class Circle:
-    cx = -1
-    cy = -1
-    r = -1
-
-    def __init__(self):
-        self.cx = np.random.randint(self.r*2, (SCREEN_SIZE/20)-(self.r*2))
-        self.cy = np.random.randint(self.r*2, (SCREEN_SIZE/20)-(self.r*2))
-        self.r = 1
-
-    def random_position(self):
-        self.cx = np.random.randint(self.r * 2, (SCREEN_SIZE / 20) - (self.r * 2))
-        self.cy = np.random.randint(self.r * 2, (SCREEN_SIZE / 20) - (self.r * 2))
-
-    # Draw a circle
-    def draw_circle(self):
-        iterator = 10
-
-        glColor3f(0.807, 0.0, 0.0)
-        glBegin(GL_TRIANGLES)
-
-        glVertex3f(self.cx, self.cy, 0.0)
-        for theta in range(361):
-            glVertex3f(self.cx, self.cy, 0.0)
-
-            rads = np.pi * theta / 180
-
-            x = self.cx + self.r * np.cos(rads)
-            y = self.cy + self.r * np.sin(rads)
-
-            glVertex3f(x, y, 0.0)
-
-            if theta == 360:
-                rads = 0
-
-                x = self.cx + self.r * np.cos(rads)
-                y = self.cy + self.r * np.sin(rads)
-
-                glVertex3f(x, y, 0.0)
-            else:
-                rads = np.pi * theta / 180
-
-                x = self.cx + self.r * np.cos(rads)
-                y = self.cy + self.r * np.sin(rads)
-
-                glVertex3f(x, y, 0.0)
-        glEnd()
-
-        glColor3f(0.0, 0.0, 0.0)
-        glBegin(GL_LINE_STRIP)
-
-        for theta in range(360):
-            rads = np.pi * theta / 180
-
-            x = self.cx + self.r * np.cos(rads)
-            y = self.cy + self.r * np.sin(rads)
-
-            glVertex3f(x, y, 0.0)
-
-        glEnd()
-
-    def move_circle(self, new_x, new_y):
-        self.cx += new_x
-        self.cy += new_y
-
-
 def draw_background():
     glColor3f(0.870, 0.905, 0.937)
     glBegin(GL_POLYGON)
-    glVertex3f(0, 0, 0.0)
-    glVertex3f(SCREEN_SIZE, 0, 0.0)
-    glVertex3f(SCREEN_SIZE, SCREEN_SIZE, 0.0)
-    glVertex3f(0, SCREEN_SIZE, 0.0)
+    glVertex3f(-1, -1, 0.0)
+    glVertex3f(1, -1, 0.0)
+    glVertex3f(1, 1, 0.0)
+    glVertex3f(-1, 1, 0.0)
     glEnd()
-    glFlush()
-
-
-def iterate():
-    glViewport(0, 0, SCREEN_SIZE, SCREEN_SIZE)
-    glMatrixMode(GL_PROJECTION)
-    glLoadIdentity()
-    glOrtho(0.0, SCREEN_SIZE/20, 0.0, SCREEN_SIZE/20, 0.0, -1.0)
-    glMatrixMode(GL_MODELVIEW)
-    glLoadIdentity()
 
 
 def display():
@@ -176,6 +168,7 @@ def display():
 
     # clear all pixels
     glClear(GL_COLOR_BUFFER_BIT)
+
 
     # draw white polygon (rectangle) with corners at
     # (0.25, 0.25, 0.0) and (0.75, 0.75, 0.0)
@@ -200,13 +193,31 @@ def init():
     glClearColor(0.0, 0.0, 0.0, 0.0)
 
     # initialize viewing values
-    glViewport(0, 0, SCREEN_SIZE, SCREEN_SIZE)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    glOrtho(0.0, SCREEN_SIZE/20, 0.0, SCREEN_SIZE/20, 0.0, -1.0)
+    glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0)
 
 
-# def mouse_click(x, y, circles):
+#WHY IS THE RANGE FROM(b->t, l->r) X: 0.0 - -1.2 AND Y: -0.2 - 1.0
+
+def click(x, y):
+    global current_circle
+
+    nx = x / (SCREEN_SIZE/2) - 1.0
+    ny = -1 * (y / (SCREEN_SIZE/2) - 1.0)
+
+    print("Mouse click", nx, ny)
+
+    for circle in circles:
+        print("Circle center", circle.cx, circle.cy)
+        if (np.square(nx - circle.cx) + np.square(ny - circle.cy)) \
+                <= np.square(circle.r * (1 / SCREEN_SIZE * 10)):
+            current_circle = circle
+            current_circle.set_position(nx, ny)
+
+            glutPostRedisplay()
+
+
 #  Declare initial window size, position, and display mode
 #  (single buffer and RGBA).  Open window with "hello"
 #  in its title bar.  Call initialization routines.
@@ -232,11 +243,9 @@ def main():
 
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA)
-    glutCreateWindow("Assignment 2 - Ian Rosenberg")
-    # glutMouseFunc(mouse_click(circles))
-    # glutMotionFunc()
     glutInitWindowSize(SCREEN_SIZE, SCREEN_SIZE)
-    glutInitWindowPosition(100, 100)
+    glutCreateWindow("Assignment 2 - Ian Rosenberg")
+    glutMotionFunc(click)
     init()
 
     glutDisplayFunc(display)
@@ -244,6 +253,10 @@ def main():
     glutKeyboardFunc(keyboard)
     glutMainLoop()
 
+
+SCREEN_SIZE = 250
+circles = []
+current_circle = Circle()
 
 if __name__ == '__main__':
     main()
