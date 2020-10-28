@@ -62,22 +62,38 @@ ERROR: PyOpenGL not installed properly.
         ''')
     sys.exit()
 
-global current_circle
-
 
 class Circle:
     cx = -1.0
     cy = -1.0
+    vx = 0.0
+    vy = 0.0
     r = -1.0
+    size_mult = 1.0
 
     def __init__(self):
-        self.cx = rand.uniform(-1.0, 1.0)
-        self.cy = rand.uniform(-1.0, 1.0)
+        self.cx = rand.uniform(-0.75, 0.75)
+        self.cy = rand.uniform(-0.75, 0.75)
+        self.choose_velocity()
         self.r = 1
+        self.size_mult = 25.0
+
+    def choose_velocity(self):
+        rand_x = rand.randint(-1, 1)
+        rand_y = rand.randint(-1, 1)
+
+        if rand_x > 0:
+            self.vx = 0.05
+        if rand_x <= 0:
+            self.vx = -0.05
+        if rand_y > 0:
+            self.vy = 0.05
+        if rand_y <= 0:
+            self.vy = -0.05
 
     def random_position(self):
-        self.cx = rand.uniform(-1.0, 1.0)
-        self.cy = rand.uniform(-1.0, 1.0)
+        self.cx = rand.uniform(-0.75, 0.75)
+        self.cy = rand.uniform(-0.75, 0.75)
 
     def set_position(self, px, py):
         self.cx = px
@@ -85,55 +101,76 @@ class Circle:
 
     # Draw a circle
     def draw_circle(self):
+        if sys.argv[1] not in ["-anim", "-crowd"]:
+            self.size_mult = 25
+        elif sys.argv[1] == "-anim":
+            self.size_mult = 65
+        elif sys.argv[1] == "-crowd":
+            self.size_mult = 130
+
+        glPushMatrix()
         glColor3f(0.807, 0.0, 0.0)
         glBegin(GL_TRIANGLES)
 
         glVertex3f(self.cx, self.cy, 0.0)
-        for theta in range(361):
+        for theta in range(37):
             glVertex3f(self.cx, self.cy, 0.0)
 
-            rads = np.pi * theta / 180
+            rads = np.pi * (theta * 10) / 180
 
-            x = self.cx + self.r/10 * np.cos(rads)
-            y = self.cy + self.r/10 * np.sin(rads)
+            x = self.cx + self.r / SCREEN_SIZE * self.size_mult * np.cos(rads)
+            y = self.cy + self.r / SCREEN_SIZE * self.size_mult * np.sin(rads)
 
             glVertex3f(x, y, 0.0)
 
-            if theta == 360:
+            if theta == 36:
                 rads = 0
 
-                x = self.cx + self.r/10 * np.cos(rads)
-                y = self.cy + self.r/10 * np.sin(rads)
+                x = self.cx + self.r / SCREEN_SIZE * self.size_mult * np.cos(rads)
+                y = self.cy + self.r / SCREEN_SIZE * self.size_mult * np.sin(rads)
 
                 glVertex3f(x, y, 0.0)
             else:
-                rads = np.pi * theta / 180
+                rads = np.pi * (theta * 10) / 180
 
-                x = self.cx + self.r/10 * np.cos(rads)
-                y = self.cy + self.r/10 * np.sin(rads)
+                x = self.cx + self.r / SCREEN_SIZE * self.size_mult * np.cos(rads)
+                y = self.cy + self.r / SCREEN_SIZE * self.size_mult * np.sin(rads)
 
                 glVertex3f(x, y, 0.0)
         glEnd()
+        glPopMatrix()
 
+        glPushMatrix()
         glColor3f(0.0, 0.0, 0.0)
         glBegin(GL_LINE_STRIP)
 
-        for theta in range(361):
-            rads = np.pi * theta / 180
+        for theta in range(36):
+            rads = np.pi * (theta * 10) / 180
 
-            x = self.cx + self.r/10 * np.cos(rads)
-            y = self.cy + self.r/10 * np.sin(rads)
+            x = self.cx + self.r/SCREEN_SIZE * self.size_mult * np.cos(rads)
+            y = self.cy + self.r/SCREEN_SIZE * self.size_mult * np.sin(rads)
 
             glVertex3f(x, y, 0.0)
 
         glEnd()
+        glPopMatrix()
 
-    def move_circle(self, new_x, new_y):
+    def move_circle(self, new_x, new_y, border):
         self.cx += new_x
         self.cy += new_y
 
+        if self.cx > border:
+            self.set_position(-border, self.cy)
+        elif self.cx < -border:
+            self.set_position(border, self.cy)
+        if self.cy > border:
+            self.set_position(self.cx, -border)
+        elif self.cy < -border:
+            self.set_position(self.cx, border)
+
 
 def draw_quad(x, y, width, height):
+    glPushMatrix()
     glColor3f(0.807, 0.0, 0.0)
     glBegin(GL_POLYGON)
     glVertex3f(x, y, 0.0)
@@ -141,7 +178,9 @@ def draw_quad(x, y, width, height):
     glVertex3f(x+width, y+height, 0.0)
     glVertex3f(x, y+height, 0.0)
     glEnd()
+    glPopMatrix()
 
+    glPushMatrix()
     glColor3f(0.0, 0.0, 0.0)
     glBegin(GL_LINE_STRIP)
     glVertex3f(x, y, 0.0)
@@ -150,15 +189,25 @@ def draw_quad(x, y, width, height):
     glVertex3f(x, y+height, 0.0)
     glVertex3f(x, y, 0.0)
     glEnd()
+    glPopMatrix()
 
 
 def draw_background():
+    v_pos = 0
+    
+    if sys.argv[1] not in ["-anim", "-crowd"]:
+        v_pos = 1
+    elif sys.argv[1] == "-anim":
+        v_pos = 2.5
+    elif sys.argv[1] == "-crowd":
+        v_pos = 5.0
+    
     glColor3f(0.870, 0.905, 0.937)
     glBegin(GL_POLYGON)
-    glVertex3f(-1, -1, 0.0)
-    glVertex3f(1, -1, 0.0)
-    glVertex3f(1, 1, 0.0)
-    glVertex3f(-1, 1, 0.0)
+    glVertex3f(-v_pos, -v_pos, 0.0)
+    glVertex3f(v_pos, -v_pos, 0.0)
+    glVertex3f(v_pos, v_pos, 0.0)
+    glVertex3f(-v_pos, v_pos, 0.0)
     glEnd()
 
 
@@ -168,7 +217,6 @@ def display():
 
     # clear all pixels
     glClear(GL_COLOR_BUFFER_BIT)
-
 
     # draw white polygon (rectangle) with corners at
     # (0.25, 0.25, 0.0) and (0.75, 0.75, 0.0)
@@ -195,10 +243,16 @@ def init():
     # initialize viewing values
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0)
+    if sys.argv[1] not in ["-anim", "-crowd"]:
+        glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0)
+    elif sys.argv[1] == "-anim":
+        glOrtho(-2.5, 2.5, -2.5, 2.5, -1.0, 1.0)
+    elif sys.argv[1] == "-crowd":
+        glOrtho(-5.0, 5.0, -5.0, 5.0, -1.0, 1.0)
 
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
 
-#WHY IS THE RANGE FROM(b->t, l->r) X: 0.0 - -1.2 AND Y: -0.2 - 1.0
 
 def click(x, y):
     global current_circle
@@ -206,50 +260,69 @@ def click(x, y):
     nx = x / (SCREEN_SIZE/2) - 1.0
     ny = -1 * (y / (SCREEN_SIZE/2) - 1.0)
 
-    print("Mouse click", nx, ny)
-
     for circle in circles:
-        print("Circle center", circle.cx, circle.cy)
         if (np.square(nx - circle.cx) + np.square(ny - circle.cy)) \
-                <= np.square(circle.r * (1 / SCREEN_SIZE * 10)):
+                <= np.square(circle.r / SCREEN_SIZE * circle.size_mult):
             current_circle = circle
             current_circle.set_position(nx, ny)
 
-            glutPostRedisplay()
+    glutPostRedisplay()
 
 
-#  Declare initial window size, position, and display mode
+def move(args):
+    border = 2.5
+    if sys.argv[1] == "-crowd":
+        border = 5.0
+
+    for circle in circles:
+        circle.move_circle(circle.vx, circle.vy, border)
+
+    glutPostRedisplay()
+    glutTimerFunc(25, move, 0)
+
+
+# Declare initial window size, position, and display mode
 #  (single buffer and RGBA).  Open window with "hello"
 #  in its title bar.  Call initialization routines.
 #  Register callback function to display graphics.
 #  Enter main loop and process events.
+
+
 def main():
     # CMD argument parsing
     if len(sys.argv) < 2:
         sys.exit()
 
+    mouse_flag = False
+
+    glutInit(sys.argv)
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA)
+    glutInitWindowSize(SCREEN_SIZE, SCREEN_SIZE)
+    glutCreateWindow("Assignment 2 - Ian Rosenberg")
+
     if sys.argv[1] != "-quad":
-        if sys.argv[1] != "crowd":
+        if sys.argv[1] == "-mouse":
+            mouse_flag = True
+        if sys.argv[1] != "-crowd" and sys.argv[1] == "-circles":
             for i in range(2):
                 circle = Circle()
                 circle.random_position()
                 circles.append(circle)
-
         else:
             for i in range(50):
                 circle = Circle()
                 circle.random_position()
                 circles.append(circle)
 
-    glutInit(sys.argv)
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA)
-    glutInitWindowSize(SCREEN_SIZE, SCREEN_SIZE)
-    glutCreateWindow("Assignment 2 - Ian Rosenberg")
-    glutMotionFunc(click)
+    if mouse_flag:
+        glutMotionFunc(click)
+
     init()
 
-    glutDisplayFunc(display)
+    if sys.argv[1] == "-anim" or sys.argv[1] == "-crowd":
+        glutTimerFunc(25, move, 0)
 
+    glutDisplayFunc(display)
     glutKeyboardFunc(keyboard)
     glutMainLoop()
 
