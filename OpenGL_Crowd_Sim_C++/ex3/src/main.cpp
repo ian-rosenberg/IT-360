@@ -5,21 +5,28 @@
 #include <memory>
 #include <string>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
+
+
 //On Linux change these lines to <SDL2/... .h>
-#include <SDL_ttf.h>
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include <SDL_ttf.h>
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include "main.h"
 
 using namespace std;
 
 const float d_h = 0.015;
 const float TIME_STEP = 0.5F;
-const float MAX_FORCE = 0.01F;
-const float MAX_SPEED = 0.00015F;
+const float MAX_FORCE = 0.1F;
+const float MAX_SPEED = 1.5F;
 
 float distance(float x1, float y1, float x2, float y2) {
 	return sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
@@ -37,32 +44,32 @@ private:
 	
 public:
 	Agent(){
-		r = 0.005;
+		r = 5;
 
-		cx = (float(rand()) / RAND_MAX);
-		cy = (float(rand()) / RAND_MAX);
+		cx = rand() % 1025;
+		cy = rand() % 1025;
 
-		vx = (float(rand() * 2 + 0.5) * float(rand() < 0.5 ? 0.1 : -0.1));
-		vy = (float(rand() * 2 + 0.5) * float(rand() < 0.5 ? 0.1 : -0.1));
+		vx = (float(rand() * 2 + 0.5) * float(rand() < 0.5 ? 5 : -5));
+		vy = (float(rand() * 2 + 0.5) * float(rand() < 0.5 ? 5 : -5));
 
-		vxGoal = (float(rand() * 2 + 0.5) * float(rand() < 0.5 ? 0.1 : -0.1));
-		vyGoal = (float(rand() * 2 + 0.5) * float(rand() < 0.5 ? 0.1 : -0.1));
+		vxGoal = (float(rand() * 2 + 0.5) * float(rand() < 0.5 ? 5 : -5));
+		vyGoal = (float(rand() * 2 + 0.5) * float(rand() < 0.5 ? 5 : -5));
 	}
 
 	void Update(Agent **agents, int agentCount, int agentIndex) {
 		if (cx < -r)
 		{
-			cx = 1.0+r;
+			cx = 1024.0+r;
 		}
-		else if (cx > 1.0 + r)
+		else if (cx > 1024.0 + r)
 		{
 			cx = 0.0-r;
 		}
 		if (cy < -r)
 		{
-			cy = 1.0+r;
+			cy = 1024.0+r;
 		}
-		else if (cy > 1.0 + r)
+		else if (cy > 1024.0 + r)
 		{
 			cy = 0.0-r;
 		}
@@ -140,7 +147,7 @@ public:
 
 			float x = cx + r * cos(rads);
 			float y = cy + r * sin(rads);
-
+			
 			glVertex3f(x, y, 0.0);
 
 			if (theta == 36){
@@ -173,14 +180,14 @@ private:
 	SDL_Surface			*surface;
 	SDL_Surface			*tempSurface;
 	SDL_GLContext		context;
-	SDL_Rect			rect;
-	TTF_Font			*font;
 
-	float				framerate;
+	double				framerate;
 	SDL_Texture			*fpsTex;
+	TTF_Font			*font;
 
 	Uint32				prevTime, curTime, frameDelay;
 	int					width, height;
+
 
 public:
 	Window()
@@ -188,10 +195,9 @@ public:
 		window = NULL;
 		renderer = NULL;
 		tex = NULL;
-		surface = NULL;
-		tempSurface = NULL;
+		surface = new SDL_Surface();
+		tempSurface = new SDL_Surface();
 		context = NULL;
-		font = NULL;
 		width = 1024;
 		height = 1024;
 		prevTime = 0;
@@ -214,24 +220,14 @@ public:
 
 			if (strcmp(args[1], "-fps") == 0)
 			{
-				printf("Initializing TTF");
-
-				TTF_Init();
-
-				if (TTF_WasInit() == -1) {
-					printf("TTF_Init: %s\n", TTF_GetError());
-					exit(1);
-				}
-				else
+				if (TTF_Init() < 0)
 				{
-					font = TTF_OpenFont("impact.ttf", 12);
-
-					if (font == NULL) {
-						printf("\n Could not load file impact.ttf... %s\n", TTF_GetError());
-
-						exit(1);
-					}
+					fprintf(stdout, "Failed to init SDL2_TTF\n");
 				}
+
+				fprintf(stdout, "SDL2_TTF initialized!\n");
+
+				font = TTF_OpenFont("impact.ttf", 24);
 			}
 
 			if (window == NULL)
@@ -277,10 +273,6 @@ public:
 		
 		SDL_DestroyWindow(window);
 		
-		TTF_CloseFont(font);
-
-		TTF_Quit();
-		
 		SDL_Quit();
 	}
 
@@ -303,7 +295,7 @@ public:
 		//Initialize Projection Matrix
 		glMatrixMode( GL_PROJECTION );
 		glLoadIdentity();
-		glOrtho(0.0, 1.0, 0.0, 1.0, 0.0, -1.0);
+		glOrtho(0.0, 1024.0, 0.0, 1024.0, 0.0, -1.0);
 		
 		//Check for error
 		error = glGetError();
@@ -344,19 +336,23 @@ public:
 		FrameDelay();
 	}
 
+	int nextpoweroftwo(int x)
+	{
+		double logbase2 = log(x) / log(2);
+		return round(pow(2, ceil(logbase2)));
+	}
+
 	float GetFrameRate()
 	{
 		return framerate;
 	}
 	
-	bool SetOpenGLAttributes()
+	void SetOpenGLAttributes()
 	{
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-
-		return true;
 	}
 
 	void FrameDelay()
@@ -374,28 +370,60 @@ public:
 	}
 	void DrawFrameRateTexture() 
 	{
-		SDL_Color c = {255,0,0};
-		string fps = "" + int(framerate); 
-		SDL_Surface* sMessage = NULL;
+		SDL_Rect rect = { 0,0,100,100 };
+		SDL_Color color = { 0,255,0 };
+		SDL_Surface *initial;
+		SDL_Surface *intermediary;
 		
-		font = TTF_OpenFont("impact.ttf", 12);
+		int w, h;
+		GLuint texture;
 
-		if (font == NULL) {
-			printf("\n Could not load file impact.ttf... %s\n", TTF_GetError());
+		stringstream stream;
+		stream << fixed << setprecision(2) << framerate;
+		string s = stream.str();
 
-			exit(1);
-		}
+		initial = TTF_RenderText_Blended(font, s.c_str(), color);
 
-		tempSurface = TTF_RenderText_Blended(font, "60000", c);
-		fpsTex = SDL_CreateTextureFromSurface(renderer, tempSurface);
+		w = nextpoweroftwo(initial->w);
+		h = nextpoweroftwo(initial->h);
 
+		intermediary = SDL_CreateRGBSurface(0, w, h, 32,
+			0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
 
-		SDL_Rect Message_rect = SDL_Rect();
-		Message_rect = { 0,0,100,100 };
+		SDL_BlitSurface(initial, 0, intermediary, 0);
 
-		SDL_RenderCopy(renderer, fpsTex, NULL, &rect);
-		SDL_DestroyTexture(fpsTex);
-		SDL_FreeSurface(sMessage);
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, 4, w, h, 0, GL_BGRA,
+			GL_UNSIGNED_BYTE, intermediary->pixels);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glColor3f(1.0f, 1.0f, 1.0f);
+
+		glBegin(GL_QUADS);
+
+		glTexCoord2f(0.0f, 1.0f);
+		glVertex2f(rect.x, rect.y);
+		glTexCoord2f(1.0f, 1.0f);
+		glVertex2f(rect.x + w, rect.y);
+		glTexCoord2f(1.0f, 0.0f);
+		glVertex2f(rect.x + w, rect.y + h);
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex2f(rect.x, rect.y + h);
+		glEnd();
+
+		glFinish();
+
+		rect.w = initial->w;
+		rect.h = initial->h;
+
+		SDL_FreeSurface(initial);
+		SDL_FreeSurface(intermediary);
+		glDeleteTextures(1, &texture);
 	}
 };
 
@@ -467,15 +495,14 @@ int main(int argc, char **argv)
 			agents[i]->Update(agents, agentCount, i);
 		}
 		
-		drawBackground(1, 1);
+		drawBackground(1024, 1024);
 
 		for (int i = 0; i < agentCount; i++) {
 			agents[i]->Draw();
 		}
 
-		if (flag == 2) {
-			//win->DrawFrameRateTexture();
-		}
+		if(flag > 1)
+			win->DrawFrameRateTexture();
 
 		win->NextFrame();
 
