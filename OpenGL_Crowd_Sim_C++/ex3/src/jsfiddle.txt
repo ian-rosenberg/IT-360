@@ -1,0 +1,182 @@
+var d = document,
+  canvas = d.body.appendChild(d.createElement('canvas')),
+  ctx = canvas.getContext('2d'),
+  time = 0,
+  w = canvas.width = innerWidth,
+  h = canvas.height = innerHeight,
+  m = Math,
+  cos = m.cos,
+  sin = m.sin,
+  PI = m.PI,
+  lastTime = (new Date()).getTime(),
+  frames = 0,
+  totalTime = 0,
+  updateTime = 0,
+  updateFrames = 0;
+
+
+const times = [];
+var fps = 0.0;
+var fps_avg = 0.0;
+
+function refreshLoop() {
+  var now = (new Date()).getTime();
+  delta = now - lastTime;
+  lastTime = now;
+  totalTime += delta;
+  frames++;
+  updateTime += delta;
+  updateFrames++;
+  if (updateTime > 1000) {
+    fps = 1000 * frames / totalTime;
+    fps_avg = 1000 * updateFrames / updateTime;
+    updateTime = 0;
+    updateFrames = 0;
+  }
+}
+
+
+var numAgents = 2 * Math.floor(w / 5);
+var agents = [];
+const RADIUS = 4;
+const AGENTSIZE = RADIUS * 2;
+const d_h = AGENTSIZE * 3;
+const TIME_STEP = 0.5;
+const MAX_SPEED = 1.5;
+const MAX_FORCE = 0.01;
+
+function distance(x1, y1, x2, y2) {
+  return Math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1));
+}
+
+function agentAtPoint(x, y) {
+  for (var i = 0; i < numAgents; i++) {
+    if (distance(x, y, agents[i].x, agents[i].y) < 10) {
+      return true;
+    }
+  }
+  return true;
+}
+
+function makeAgent() {
+  var vx = (Math.random() * 2 + 0.5) * (Math.random() < 0.5 ? 0.1 : -0.1);
+  var vy = (Math.random() * 2 + 0.5) * (Math.random() < 0.5 ? 0.1 : -0.1);
+  return {
+    x: Math.random() * w,
+    y: Math.random() * h,
+    vx: vx,
+    vy: vy,
+    vx_goal: (Math.random() * 2 + 0.5) * (Math.random() < 0.5 ? 0.1 : -0.1),
+    vy_goal: (Math.random() * 2 + 0.5) * (Math.random() < 0.5 ? 0.1 : -0.1),
+    aggro: Math.random() > 0.5 ? true : false,
+    draw: function() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, RADIUS, 0, 2 * PI, false);
+      if (this.aggro) {
+        ctx.fillStyle = 'black';
+      } else {
+        ctx.fillStyle = 'black';
+      }
+      ctx.fill();
+    },
+    step: function(i) {
+
+      /*moves agents to the other side of the canvas*/
+      if (this.x < -AGENTSIZE) {
+        this.x = w;
+      } else if (this.x > w + AGENTSIZE) {
+        this.x = 0;
+      }
+      if (this.y < -AGENTSIZE) {
+        this.y = h;
+      } else if (this.y > h + AGENTSIZE) {
+        this.y = 0;
+      }
+      /* */
+      var v_x = this.vx;
+      var v_y = this.vy;
+      var zeta = 1.0023;
+      var f_goal_x = (this.vx_goal - v_x) / zeta;
+      var f_goal_y = (this.vy_goal - v_y) / zeta;
+      if (this.vx_goal > v_x) {
+        console.log("alert");
+      }
+
+
+      var f_avoid_x = 0;
+      var f_avoid_y = 0;
+      var f_avoid_ctr = 0;
+      var interacting_agents_cntr = 0;
+      for (var j = 0; j < numAgents; j++) {
+        if (i === j) {
+          continue;
+        }
+        var dist = distance(agents[i].x, agents[i].y, agents[j].x, agents[j].y);
+
+        if (dist > 0 && dist < d_h) {
+          var d_ab = Math.max(dist - AGENTSIZE, 0.001);
+          // why did I choose 0.0001?
+          var k = Math.max(d_h - d_ab, 0);
+          var x_ab = (agents[i].x - agents[j].x) / dist;
+          var y_ab = (agents[i].y - agents[j].y) / dist;
+          interacting_agents_cntr += 1;
+          f_avoid_x += k * x_ab / d_ab;
+          f_avoid_y += k * y_ab / d_ab;
+          f_avoid_ctr = f_avoid_ctr + 1;
+        }
+      }
+      if (f_avoid_ctr > 0) {
+        f_avoid_x = f_avoid_x / f_avoid_ctr;
+        f_avoid_y = f_avoid_y / f_avoid_ctr;
+      }
+
+      //f_goal_x =0 ; f_goal_y = 0;
+      var force_sum_x = f_goal_x + f_avoid_x;
+      var force_sum_y = f_goal_y + f_avoid_y;
+      var f_avoid_mag = Math.sqrt(force_sum_x * force_sum_x + force_sum_y * force_sum_y);
+
+      if (f_avoid_mag > MAX_FORCE) {
+        force_sum_x = MAX_FORCE * force_sum_x / f_avoid_mag;
+        force_sum_y = MAX_FORCE * force_sum_y / f_avoid_mag;
+      }
+
+      v_x += TIME_STEP * force_sum_x;
+      v_y += TIME_STEP * force_sum_y;
+      var speed = Math.sqrt(v_x * v_x + v_y * v_y);
+      if (speed > MAX_SPEED) {
+        v_x = MAX_SPEED * v_x / speed;
+        v_y = MAX_SPEED * v_y / speed;
+      }
+
+      this.vx = v_x;
+      this.vy = v_y;
+      this.x += TIME_STEP * v_x;
+      this.y += TIME_STEP * v_y;
+    }
+  }
+}
+
+
+// make N agents
+for (var i = 0; i < numAgents; i++) {
+  agents.push(makeAgent());
+}
+
+
+//fps counter
+
+// The main animation loop
+setInterval(function() {
+  // Clear
+  canvas.width = canvas.width;
+
+  time += TIME_STEP;
+  for (var i = 0; i < numAgents; i++) {
+    agents[i].step(i);
+    agents[i].draw();
+  }
+  refreshLoop();
+  ctx.font = "30px Arial";
+  ctx.fillStyle = "red";
+  ctx.fillText("FPS " + fps.toFixed(1), 10, 50);
+}, 16)

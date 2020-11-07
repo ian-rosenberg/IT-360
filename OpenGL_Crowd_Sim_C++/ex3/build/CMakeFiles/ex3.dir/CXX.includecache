@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/Ian/Desktop/IT360/OpenGL_Crowd_Sim_C++/ex3/src/main.cpp
+SDL2/SDL.h
+-
+SDL2/SDL_opengl.h
+-
+stdio.h
+-
+stdlib.h
+-
+GL/gl.h
+-
+GL/glu.h
+-
+

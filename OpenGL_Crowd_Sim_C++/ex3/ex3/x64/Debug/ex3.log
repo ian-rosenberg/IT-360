@@ -1,0 +1,58 @@
+﻿Build started 10/31/2020 9:15:23 PM.
+     1>Project "C:\Users\Ian\Desktop\IT360\OpenGL_Crowd_Sim_C++\ex3\ex3\ex3.vcxproj" on node 2 (Rebuild target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /Zi /nologo /W3 /WX- /sdl /Od /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt ..\src\main.cpp
+         main.cpp
+     1>..\src\main.cpp(43): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>..\src\main.cpp(45): warning C4244: 'argument' : conversion from 'double' to 'GLfloat', possible loss of data
+     1>..\src\main.cpp(47): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>..\src\main.cpp(49): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>..\src\main.cpp(50): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>..\src\main.cpp(57): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>..\src\main.cpp(58): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>..\src\main.cpp(63): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>..\src\main.cpp(65): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>..\src\main.cpp(66): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+     1>..\src\main.cpp(219): warning C4305: 'argument' : truncation from 'double' to 'float'
+     1>..\src\main.cpp(219): warning C4244: 'argument' : conversion from 'Uint32' to 'float', possible loss of data
+     1>..\src\main.cpp(219): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+     1>..\src\main.cpp(230): warning C4101: 'e' : unreferenced local variable
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Ian\Desktop\IT360\OpenGL_Crowd_Sim_C++\ex3\ex3\x64\Debug\ex3.exe" /INCREMENTAL /NOLOGO SDL2main.lib SDL2.lib Shell32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /PDB:"C:\Users\Ian\Desktop\IT360\OpenGL_Crowd_Sim_C++\ex3\ex3\x64\Debug\ex3.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Ian\Desktop\IT360\OpenGL_Crowd_Sim_C++\ex3\ex3\x64\Debug\ex3.lib" /MACHINE:X64 x64\Debug\main.obj
+     1>main.obj : error LNK2019: unresolved external symbol SDL_GetError referenced in function "public: __cdecl Window::Window(void)" (??0Window@@QEAA@XZ)
+     1>main.obj : error LNK2019: unresolved external symbol SDL_MapRGB referenced in function "public: __cdecl Window::Window(void)" (??0Window@@QEAA@XZ)
+     1>main.obj : error LNK2019: unresolved external symbol SDL_FillRect referenced in function "public: __cdecl Window::Window(void)" (??0Window@@QEAA@XZ)
+     1>main.obj : error LNK2019: unresolved external symbol SDL_CreateWindow referenced in function "public: __cdecl Window::Window(void)" (??0Window@@QEAA@XZ)
+     1>main.obj : error LNK2019: unresolved external symbol SDL_GetWindowSurface referenced in function "public: __cdecl Window::Window(void)" (??0Window@@QEAA@XZ)
+     1>main.obj : error LNK2019: unresolved external symbol SDL_UpdateWindowSurface referenced in function "public: __cdecl Window::Window(void)" (??0Window@@QEAA@XZ)
+     1>main.obj : error LNK2019: unresolved external symbol SDL_GL_SetAttribute referenced in function "public: bool __cdecl Window::SetOpenGLAttributes(void)" (?SetOpenGLAttributes@Window@@QEAA_NXZ)
+     1>main.obj : error LNK2019: unresolved external symbol SDL_GL_CreateContext referenced in function "public: __cdecl Window::Window(void)" (??0Window@@QEAA@XZ)
+     1>main.obj : error LNK2019: unresolved external symbol SDL_GL_SetSwapInterval referenced in function "public: __cdecl Window::Window(void)" (??0Window@@QEAA@XZ)
+     1>main.obj : error LNK2019: unresolved external symbol SDL_GL_SwapWindow referenced in function "public: void __cdecl Window::NextFrame(void)" (?NextFrame@Window@@QEAAXXZ)
+     1>main.obj : error LNK2019: unresolved external symbol SDL_GetKeyboardState referenced in function SDL_main
+     1>main.obj : error LNK2019: unresolved external symbol SDL_ShowCursor referenced in function SDL_main
+     1>main.obj : error LNK2019: unresolved external symbol SDL_PumpEvents referenced in function SDL_main
+     1>main.obj : error LNK2019: unresolved external symbol SDL_CreateRenderer referenced in function "public: __cdecl Window::Window(void)" (??0Window@@QEAA@XZ)
+     1>main.obj : error LNK2019: unresolved external symbol SDL_GetTicks referenced in function "public: __cdecl Window::Window(void)" (??0Window@@QEAA@XZ)
+     1>main.obj : error LNK2019: unresolved external symbol SDL_Delay referenced in function "public: void __cdecl Window::FrameDelay(void)" (?FrameDelay@Window@@QEAAXXZ)
+     1>main.obj : error LNK2019: unresolved external symbol SDL_Init referenced in function "public: __cdecl Window::Window(void)" (??0Window@@QEAA@XZ)
+     1>main.obj : error LNK2019: unresolved external symbol __imp_glClearColor referenced in function "public: bool __cdecl Window::initGL(void)" (?initGL@Window@@QEAA_NXZ)
+     1>main.obj : error LNK2019: unresolved external symbol __imp_glClear referenced in function "public: void __cdecl Window::NextFrame(void)" (?NextFrame@Window@@QEAAXXZ)
+     1>main.obj : error LNK2019: unresolved external symbol __imp_glGetError referenced in function "public: bool __cdecl Window::initGL(void)" (?initGL@Window@@QEAA_NXZ)
+     1>main.obj : error LNK2019: unresolved external symbol __imp_glMatrixMode referenced in function "public: bool __cdecl Window::initGL(void)" (?initGL@Window@@QEAA_NXZ)
+     1>main.obj : error LNK2019: unresolved external symbol __imp_glOrtho referenced in function "public: bool __cdecl Window::initGL(void)" (?initGL@Window@@QEAA_NXZ)
+     1>main.obj : error LNK2019: unresolved external symbol __imp_glPushMatrix referenced in function "public: void __cdecl Agent::Draw(void)" (?Draw@Agent@@QEAAXXZ)
+     1>main.obj : error LNK2019: unresolved external symbol __imp_glPopMatrix referenced in function "public: void __cdecl Agent::Draw(void)" (?Draw@Agent@@QEAAXXZ)
+     1>main.obj : error LNK2019: unresolved external symbol __imp_glLoadIdentity referenced in function "public: bool __cdecl Window::initGL(void)" (?initGL@Window@@QEAA_NXZ)
+     1>main.obj : error LNK2019: unresolved external symbol __imp_glBegin referenced in function "public: void __cdecl Agent::Draw(void)" (?Draw@Agent@@QEAAXXZ)
+     1>main.obj : error LNK2019: unresolved external symbol __imp_glEnd referenced in function "public: void __cdecl Agent::Draw(void)" (?Draw@Agent@@QEAAXXZ)
+     1>main.obj : error LNK2019: unresolved external symbol __imp_glVertex3f referenced in function "public: void __cdecl Agent::Draw(void)" (?Draw@Agent@@QEAAXXZ)
+     1>main.obj : error LNK2019: unresolved external symbol __imp_glColor3f referenced in function "public: void __cdecl Agent::Draw(void)" (?Draw@Agent@@QEAAXXZ)
+     1>main.obj : error LNK2019: unresolved external symbol gluErrorString referenced in function "public: bool __cdecl Window::initGL(void)" (?initGL@Window@@QEAA_NXZ)
+     1>MSVCRTD.lib(crtexe.obj) : error LNK2019: unresolved external symbol main referenced in function __tmainCRTStartup
+     1>C:\Users\Ian\Desktop\IT360\OpenGL_Crowd_Sim_C++\ex3\ex3\x64\Debug\ex3.exe : fatal error LNK1120: 31 unresolved externals
+     1>Done Building Project "C:\Users\Ian\Desktop\IT360\OpenGL_Crowd_Sim_C++\ex3\ex3\ex3.vcxproj" (Rebuild target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.53

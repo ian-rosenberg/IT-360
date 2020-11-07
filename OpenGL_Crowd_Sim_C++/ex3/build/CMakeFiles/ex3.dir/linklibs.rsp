@@ -1,0 +1,1 @@
+ -LC:/SDL2Libs/MinGW/SDL2-2.0.12/lib/x86 -lSDL2main -lSDL2 -lopengl32 -lgl3w -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 

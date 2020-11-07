@@ -1,0 +1,42 @@
+﻿  main.cpp
+..\src\main.cpp(18): warning C4305: 'initializing' : truncation from 'double' to 'const float'
+..\src\main.cpp(39): warning C4305: '=' : truncation from 'double' to 'float'
+..\src\main.cpp(54): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+..\src\main.cpp(58): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+..\src\main.cpp(62): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+..\src\main.cpp(66): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+..\src\main.cpp(71): warning C4305: 'initializing' : truncation from 'double' to 'float'
+..\src\main.cpp(87): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+..\src\main.cpp(138): warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+..\src\main.cpp(154): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+..\src\main.cpp(363): warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+..\src\main.cpp(428): warning C4244: 'initializing' : conversion from 'double' to 'int', possible loss of data
+..\src\main.cpp(425): warning C4101: 'e' : unreferenced local variable
+main.obj : error LNK2001: unresolved external symbol TTF_WasInit
+main.obj : error LNK2001: unresolved external symbol SDL_Init
+main.obj : error LNK2001: unresolved external symbol SDL_GetWindowSurface
+main.obj : error LNK2001: unresolved external symbol SDL_GL_SetSwapInterval
+main.obj : error LNK2001: unresolved external symbol SDL_GetKeyboardState
+main.obj : error LNK2001: unresolved external symbol SDL_GL_SwapWindow
+main.obj : error LNK2001: unresolved external symbol SDL_FillRect
+main.obj : error LNK2001: unresolved external symbol SDL_CreateWindow
+main.obj : error LNK2001: unresolved external symbol SDL_RenderCopy
+main.obj : error LNK2001: unresolved external symbol SDL_ShowCursor
+main.obj : error LNK2001: unresolved external symbol SDL_CreateTextureFromSurface
+main.obj : error LNK2001: unresolved external symbol SDL_UpdateWindowSurface
+main.obj : error LNK2001: unresolved external symbol SDL_GL_CreateContext
+main.obj : error LNK2001: unresolved external symbol TTF_RenderText_Blended
+main.obj : error LNK2001: unresolved external symbol SDL_SetRenderDrawColor
+main.obj : error LNK2001: unresolved external symbol TTF_OpenFont
+main.obj : error LNK2001: unresolved external symbol TTF_CloseFont
+main.obj : error LNK2001: unresolved external symbol TTF_Init
+main.obj : error LNK2001: unresolved external symbol SDL_PumpEvents
+main.obj : error LNK2001: unresolved external symbol SDL_Delay
+main.obj : error LNK2001: unresolved external symbol SDL_CreateRenderer
+main.obj : error LNK2001: unresolved external symbol SDL_GetTicks
+main.obj : error LNK2001: unresolved external symbol SDL_GetError
+main.obj : error LNK2001: unresolved external symbol SDL_GL_SetAttribute
+main.obj : error LNK2001: unresolved external symbol SDL_MapRGB
+main.obj : error LNK2001: unresolved external symbol SDL_FreeSurface
+MSVCRT.lib(crtexe.obj) : error LNK2001: unresolved external symbol main
+C:\Users\Ian\Desktop\IT360\OpenGL_Crowd_Sim_C++\ex3\ex3\x64\Release\ex3.exe : fatal error LNK1120: 27 unresolved externals

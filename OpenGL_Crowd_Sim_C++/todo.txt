@@ -1,0 +1,11 @@
+why are there no matching ids for buckets
+	See below
+
+why are no buckets being added to the bucket list?
+	Because of the empty condition not adding anything
+
+why are the indices getting ridiculuously high?
+
+
+Idea: 
+	get buckets relative to id, so current = currentId + AND/OR - rowWidth and current, current->prev, current->next, 
