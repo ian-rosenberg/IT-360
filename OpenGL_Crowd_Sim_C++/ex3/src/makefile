@@ -31,5 +31,3 @@ release: $(RELEASE_OBJ_FILES)
 # Each .o file finds his .cpp counterpart, with optimisations
 $(RELEASE_OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	g++ -std=c++17 -O3 -Wall -Wextra -c -o $@ $<
-
-endif

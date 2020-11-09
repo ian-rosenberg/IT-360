@@ -33,6 +33,10 @@ float distance(float x1, float y1, float x2, float y2) {
 	return sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
 }
 
+float max( float f1, float f2){
+	return f1 > f2 ? f1 : f2;
+}
+
 class Agent{
 private:
 	float			cx;
@@ -124,8 +128,8 @@ public:
 			float dist = distance((*agents)[agentIndex]->cx, (*agents)[agentIndex]->cy, (*agents)[j]->cx, (*agents)[j]->cy);
 
 			if (dist > 0 && dist < d_h){
-				float d_ab = __max(dist - r, 0.001);
-				float k = __max(d_h - d_ab, 0);
+				float d_ab = max(dist - r, 0.001);
+				float k = max(d_h - d_ab, 0);
 				float x_ab = ((*agents)[agentIndex]->cx - (*agents)[j]->cx) / dist;
 				float y_ab = ((*agents)[agentIndex]->cy - (*agents)[j]->cy) / dist;
 				interacting_agents_cntr += 1;
@@ -648,7 +652,7 @@ public:
 		curTime = SDL_GetTicks();
 		diff = (curTime - prevTime);
 
-		framerate = 1000.0 / __max(SDL_GetTicks() - prevTime, 0.001);
+		framerate = 1000.0 / max(SDL_GetTicks() - prevTime, 0.001);
 	}
 	void DrawFrameRateTexture() 
 	{
