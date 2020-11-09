@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <vector>
 
+
 //On Linux change these lines to <SDL2/... .h>
 #include <SDL.h>
 #include <SDL_opengl.h>
@@ -22,10 +23,11 @@
 
 using namespace std;
 
-const float d_h = 0.015;
-const float TIME_STEP = 0.5F;
-const float MAX_FORCE = 0.1F;
-const float MAX_SPEED = 1.5F;
+const float RADIUS = 4.0f;
+const float d_h = RADIUS * 5.0f;
+const float TIME_STEP = 0.5f;
+const float MAX_FORCE = 0.01f;
+const float MAX_SPEED = .5f;
 
 float distance(float x1, float y1, float x2, float y2) {
 	return sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
@@ -40,10 +42,13 @@ private:
 	float			r;
 	float			vxGoal;
 	float			vyGoal;
+
+	string			bucketId;
 	
 public:
 	Agent(){
-		r = 5;
+		bucketId = "-1,-1";
+		r = RADIUS;
 
 		cx = rand() % 1025;
 		cy = rand() % 1025;
@@ -53,6 +58,10 @@ public:
 
 		vxGoal = (float(rand() * 2 + 0.5) * float(rand() < 0.5 ? 5 : -5));
 		vyGoal = (float(rand() * 2 + 0.5) * float(rand() < 0.5 ? 5 : -5));
+	}
+
+	string GetBucketId() {
+		return bucketId;
 	}
 
 	float GetRadius() {
@@ -75,6 +84,9 @@ public:
 		return vy;
 	}
 
+	void SetBucketId(string id) {
+		bucketId = id;
+	}
 
 	void Update(vector<Agent*> *agents, int agentCount, int agentIndex) {
 		if (cx < -r)
@@ -154,8 +166,6 @@ public:
 	}
 
 	void Draw(){
-
-        glPushMatrix();
 		glColor3f(0.0, 0.0, 0.0);
 		glBegin(GL_TRIANGLES);
 
@@ -188,13 +198,12 @@ public:
 			}
 		}
 		glEnd();
-		glPopMatrix();
 	}
 };
 
 class Bucket {
 private:
-	int				id;
+	string				id;
 
 	Bucket			*next;
 	Bucket			*prev;
@@ -203,7 +212,7 @@ private:
 
 public:
 	Bucket() {
-		id = 0;
+		id = "-1,-1";
 
 		next = NULL;
 		prev = NULL;
@@ -230,10 +239,13 @@ public:
 	}
 
 	~Bucket() {
-		int i = int(agents.size()) - 1;
-		for (; i >= 0; i--) {
-			agents.pop_back();
-		}
+		agents.clear();
+
+		if (prev != NULL)
+			prev = NULL;
+
+		if (next != NULL)
+			next = NULL;
 	}
 
 	void SetNextPtr(Bucket *nextBucket) {
@@ -244,16 +256,21 @@ public:
 		prev = nextBucket;
 	}
 
-	int GetId() {
+	string GetId() {
 		return id;
 	}
 
 	void AddAgent(Agent *agent) {
 		agents.push_back(agent);
+		agent->SetBucketId(id);
 	}
 
 	vector<Agent*>* GetAgents() {
 		return &agents;
+	}
+
+	int GetNumAgents() {
+		return agents.size();
 	}
 };
 
@@ -264,7 +281,7 @@ private:
 	int				rows;
 	int				sceneHeight;
 	int				sceneWidth;
-	
+
 	vector<Bucket*> buckets;
 
 public:
@@ -278,23 +295,25 @@ public:
 		buckets = vector<Bucket*>();
 	}
 
-	SpatialHash(int sceneWidth, int sceneHeight, int size) {
+	SpatialHash(int sW, int sceneHeight, int size) {
 		buckets = vector<Bucket*>();
-		
-		Setup(sceneWidth, sceneHeight, size);
+
+		Setup(sW, sceneHeight, size);
 	}
 
-	~SpatialHash(){
+	~SpatialHash() {
 		int i = int(buckets.size()) - 1;
 		for (; i >= 0; i--) {
 			vector<Agent*> *agentsInBucket = buckets[i]->GetAgents();
-			for (int j = agentsInBucket->size(); j >= 0; j--) {
-				(*agentsInBucket).pop_back();
-			}
+			agentsInBucket->clear();
 		}
 	}
 
-	void Setup(int scenewidth, int sceneheight, int cellsize){
+	int GetNumBuckets() {
+		return buckets.size();
+	}
+
+	void Setup(int scenewidth, int sceneheight, int cellsize) {
 		cols = scenewidth / cellsize;
 		rows = sceneheight / cellsize;
 		cellSize = cellsize;
@@ -305,44 +324,37 @@ public:
 		int i = 0;
 
 		for (; i < cols*rows; i++) {
-			prev = current;
-			current = new Bucket(i, NULL);
-
-			buckets.push_back(current);
-
-			if (prev != NULL) {
-				current->SetPrevPtr(prev);
-				prev->SetNextPtr(current);
-			}
+			buckets.push_back(new Bucket(i));
 		}
-
-		printf("There are %i buckets", buckets.size());
 	}
 
 	void ClearBuckets() {
+		vector<Agent*> *agents = NULL;
 		for (int i = 0; i < int(buckets.size()); i++)
 		{
-			vector<Agent*> *agents = buckets[i]->GetAgents();
-
+			agents = buckets[i]->GetAgents();		
 			agents->clear();
+
+			delete buckets[i];
 		}
 
 		buckets.clear();
 	}
 
-	vector<Bucket*>* GetNearby(Agent *agent) {
-		vector<Bucket*> *nearby = new vector<Bucket*>();
+	vector<Agent*> GetNearby(Agent *agent) {
+		vector<Agent*> nearby = vector<Agent*>();
 		vector<Bucket*> *b = GetBucketsForAgent(agent);
-		for (int i = 0; i < int(b->size()); i++) {
-			nearby->push_back((*b)[i]);
+		for (int i = 0; i < b->size(); i++) {
+			vector<Agent*> agents = (*(*b)[i]->GetAgents());
+			for(int j = 0; j < agents.size(); j++)
+				nearby.push_back(agents[j]);
 		}
 
 		return nearby;
 	}
 
-	vector<Bucket*>* GetBucketsForAgent(Agent *agent){
+	vector<Bucket*>* GetBucketsForAgent(Agent *agent) {
 		vector<Bucket*> *bucketsAgentIsIn = new vector<Bucket*>();
-
 		int minx = agent->GetPositionX();
 		int miny = agent->GetPositionY();
 
@@ -364,74 +376,73 @@ public:
 
 	void AddBucket(int pX, int pY, float width, vector<Bucket*> *bucketList)
 	{
-		int cellPosition = (int)(
-			(floor(pX / cellSize)) +
-			(floor(pY / cellSize)) *
-			width
-			);
+		int cellPosition = (int(floor(pX / cellSize)) + int(floor(pY / cellSize))) % int(width);
+
 		Bucket* usedBucket = GetBucketById(cellPosition);
-		Uint8 flag = 0;
 
 		if (usedBucket == NULL) {
 			if (buckets.size() == 0) {
 				usedBucket = new Bucket(cellPosition);
 			}
-			else {
-
-				for (int i = 0; i < (*bucketList).size(); i++) {
-					if ((*bucketList)[i]->GetId() == cellPosition) {
-						flag = 1;
-					}
-
-					if (flag == 0) {
-						usedBucket = new Bucket(cellPosition, (*bucketList)[int(bucketList->size()) - 1]);
-
-						bucketList->push_back(usedBucket);
-					}
-				}
+		}
+		else {
+			if (GetBucketById(cellPosition) == NULL) {
+				usedBucket = new Bucket(cellPosition, (*bucketList)[int(bucketList->size()) - 1]);
 			}
+			for (int i = 0; i < bucketList->size(); i++){
+				if (strcmp(usedBucket->GetId().c_str(), (*bucketList)[i]->GetId().c_str()) == 0)
+					return;
+			}
+
+			bucketList->push_back(usedBucket);
 		}
 	}
 
+	void AddBucketWithAgent(int pX, int pY, float width, vector<Bucket*> *bucketList, Agent *a)
+	{
+		int cellPosition = (int(floor(pX / cellSize)) + int(floor(pY / cellSize))) % int(width);
+		Bucket* usedBucket = GetBucketById(cellPosition);
+		Uint8 flag = 0;
+
+		if (usedBucket == NULL) {
+			usedBucket = new Bucket(cellPosition, (*bucketList)[int(bucketList->size()) - 1]);
+
+			bucketList->push_back(usedBucket);
+		}
+		else {
+			usedBucket->AddAgent(a);
+			a->SetBucketId(usedBucket->GetId());
+		}
+	}
+
+
 	void RegisterAgent(Agent *agent)
 	{
-		vector<Bucket*> *cellIds = GetBucketsForAgent(agent);
 		float width = sceneWidth / cellSize;
-		
-		if (cellIds == NULL) {
-			AddBucket(agent->GetPositionX(), agent->GetPositionY(), width, &buckets);
+		int xH = round(agent->GetPositionX()/cellSize) * cellSize;
+		int yH = round(agent->GetPositionY()/cellSize) * cellSize;
+		string hash = xH + "," + yH;
+
+
+		vector<Bucket*> *cellIds = GetBucketsForAgent(agent);
+		if (cellIds == NULL || (*cellIds).size() == 0) {
+			AddBucketWithAgent(agent->GetPositionX(), agent->GetPositionY(), width, &buckets, agent);
 		}
 		else {
 			for (int item = 0; item < int(cellIds->size()); item++)
 			{
 				(*cellIds)[item]->AddAgent(agent);
-				fprintf(stdout, "Adding agent to bucket with id %i \n", (*cellIds)[item]->GetId());
+				agent->SetBucketId(hash);
 			}
 		}
 	}
 
 	Bucket* GetBucketById(int id) {
-		for (int i = 0; i < int(buckets.size()); i++)
-		{
-			if (buckets[i]->GetId() == id)
-				return buckets[i];
+		if (id < 0 || id >= buckets.size()) {
+			return NULL;
 		}
 
-		return NULL;
-	}
-
-	void UpdateAgents() {
-		int bucketSize = int(buckets.size());
-
-		for (int i = 0; i < bucketSize; i++)
-		{
-			vector<Agent*> *agents = buckets[i]->GetAgents();
-			int agentCount = int(agents->size());
-
-			for (int j = 0; j < agentCount; j++) {
-				(*agents)[j]->Update(agents, agentCount, j);
-			}
-		}
+		return buckets[id];
 	}
 
 	void DrawAgents() {
@@ -459,7 +470,7 @@ private:
 	SDL_Texture			*fpsTex;
 	TTF_Font			*font;
 
-	Uint32				prevTime, curTime, frameDelay;
+	Uint32				prevTime, curTime;
 	int					width, height;
 
 
@@ -476,7 +487,7 @@ public:
 		height = 1024;
 		prevTime = 0;
 		curTime = 0;
-		frameDelay = 16;
+		font = NULL;
 	}
 	
 	void Window_Init(char **args)
@@ -492,7 +503,7 @@ public:
 
 			window = SDL_CreateWindow("Exercise 3", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 
-			if (strcmp(args[1], "-fps") == 0)
+			if (strcmp(args[1], "-fps") == 0 || strcmp(args[1], "-shash") == 0)
 			{
 				if (TTF_Init() < 0)
 				{
@@ -607,7 +618,8 @@ public:
 	{
 		SDL_GL_SwapWindow(window);
 
-		FrameDelay();
+		CalculateFramerate();
+		fprintf(stdout, "FPS: %f\n", framerate);
 	}
 
 	int nextpoweroftwo(int x)
@@ -629,16 +641,12 @@ public:
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 	}
 
-	void FrameDelay()
+	void CalculateFramerate()
 	{
 		Uint32 diff;
 		prevTime = curTime;
 		curTime = SDL_GetTicks();
 		diff = (curTime - prevTime);
-		if (diff < frameDelay)
-		{
-			SDL_Delay(frameDelay - diff);
-		}
 
 		framerate = 1000.0 / __max(SDL_GetTicks() - prevTime, 0.001);
 	}
@@ -725,9 +733,10 @@ int main(int argc, char **argv)
 	Window *win = new Window();
 	int agentCount = 1 * floor(win->GetWidth() / 2);
 	SpatialHash *sHash = new SpatialHash();
-	vector<Agent*> agents;
+	vector<Agent*> agents; 
 	string pArgs[] = { "-favoid","-fps","-shash" };
 	int flag = 0;
+	int numBuckets = 0;
 
 	win->Window_Init(argv);
 
@@ -738,7 +747,9 @@ int main(int argc, char **argv)
 	else if (strcmp(argv[1], "-shash") == 0) {
 		printf("\nshash flag set!\n");
 		flag = 3;
-		sHash->Setup(1024, 1024, 16);
+		sHash->Setup(1024, 1024, 32);
+
+		numBuckets = sHash->GetNumBuckets();
 	}
 	else if (strcmp(argv[1], "-favoid") == 0) {
 		printf("\nfavoid flag set!\n");
@@ -774,13 +785,20 @@ int main(int argc, char **argv)
 		{
 			sHash->ClearBuckets();
 
-			sHash->Setup(1024, 1024, 16);
+			sHash->Setup(1024, 1024, 32);
 			
 			for (int i = 0; i < agentCount; i++) {
 				sHash->RegisterAgent(agents[i]);
 			}
+			
+			for (int i = 0; i < agentCount; i++) {
+				vector<Agent*> agentsInBucket = sHash->GetNearby(agents[i]);
+				
+				for (int j = 0; j < agentsInBucket.size(); j++) {
 
-			sHash->UpdateAgents();
+					agentsInBucket[j]->Update(&agentsInBucket, agentsInBucket.size(), j);
+				}
+			}
 		}
 		
 		drawBackground(1024, 1024);
@@ -794,7 +812,7 @@ int main(int argc, char **argv)
 			sHash->DrawAgents();
 		}
 
-		if(flag == 2)
+		if(flag > 2)
 			win->DrawFrameRateTexture();
 
 		win->NextFrame();
